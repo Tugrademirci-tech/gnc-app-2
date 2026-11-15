@@ -84,6 +84,11 @@ const VAPID="BE6ztZnGFi-6U6pqNWeX3oudbgEjm4M4Kn3SSJMFaRaUhUUrV8xs_J5-zGlvecoLVLK
 /* =================================================================== */
 
 function onSnapshot(q,cb){return onSnap(q,cb,e=>{const s=document.getElementById("chs");if(s)s.textContent="Fehler beim Laden: "+(e.code||"")+" "+String(e.message||"").slice(0,90)})}
+// Lädt nur die neuesten n Einträge; falls der Index noch fehlt, ohne Limit als Notlösung
+function subLim(col,wh,n,cb){let un=()=>{},dead=false;
+ un=onSnap(query(collection(db,col),wh,orderBy("ts","desc"),limit(n)),cb,()=>{if(dead)return;
+  un=onSnap(query(collection(db,col),wh),cb,er=>{const s=document.getElementById("chs");if(s)s.textContent="Fehler beim Laden: "+(er.code||"")})});
+ return()=>{dead=true;un()}}
 const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 const $=i=>document.getElementById(i);
 const mail=u=>u.trim().toLowerCase().replace(/\s+/g,"")+"@gnc.de";
@@ -144,13 +149,13 @@ function start(){first={};openChat=null;unread={};chatAll=[];dmAll=[];adm=[];use
   const s=ein-aus;$("saldo").textContent=eur(s);$("saldo").className="big "+(s<0?"minus":"plus");
   $("sub").textContent="Einnahmen "+eur(ein)+" · Ausgaben "+eur(aus)}));
  // Anwesenheit
- unsubs.push(onSnapshot(query(collection(db,"visits"),where("grp","==",G())),sn=>{
+ unsubs.push(subLim("visits",where("grp","==",G()),100,sn=>{
   const box=$("vl");box.replaceChildren();[...sn.docs].sort(byTs).slice(0,100).forEach(d=>{const x=d.data(),r=el("div","","li");
    r.append(el("span",(x.type==="ein"?"✅ ":"🚪 ")+x.name),el("span",tm(x.ts),"mu"));box.append(r)})}));
  // Chat
- unsubs.push(onSnapshot(query(collection(db,"chat"),where("grp","==",G())),sn=>{newMsg("chat",sn);chatAll=sn.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.ts?.seconds||9e9)-(b.ts?.seconds||9e9));renderChats()}));
+ unsubs.push(subLim("chat",where("grp","==",G()),100,sn=>{newMsg("chat",sn);chatAll=sn.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.ts?.seconds||9e9)-(b.ts?.seconds||9e9));renderChats()}));
  // Bestellungen
- unsubs.push(onSnapshot(query(collection(db,"orders"),where("grp","==",G())),sn=>{
+ unsubs.push(subLim("orders",where("grp","==",G()),150,sn=>{
   if(first.o)sn.docChanges().forEach(c=>{if(c.type==="added"&&c.doc.data().uid!==me.uid)lnotify("🍽 Neue Bestellung",c.doc.data().text)});first.o=1;
   const op=$("ol"),dn=$("od");op.replaceChildren();dn.replaceChildren();const all=[...sn.docs].sort(byTs).map(d=>({ref:d.ref,...d.data()}));
   const open=all.filter(x=>!x.done);$("sbo").textContent="🍽 Bestellungen"+(open.length?" ("+open.length+")":"");
@@ -160,8 +165,8 @@ function start(){first={};openChat=null;unread={};chatAll=[];dmAll=[];adm=[];use
   all.filter(x=>x.done).slice(0,15).forEach(x=>{const r=el("div","","li");r.append(el("span","✔ "+x.text+(x.who?" ("+x.who+")":"")),el("span",tm(x.ts),"mu"));dn.append(r)})}));
  // Nutzer + Chats
  unsubs.push(onSnapshot(query(collection(db,"users"),where("grp","==",G())),sn=>{users=sn.docs.map(d=>({uid:d.id,...d.data()}));renderUsers();renderChats()}));
- unsubs.push(onSnapshot(query(collection(db,"dm"),where("participants","array-contains",me.uid)),sn=>{newMsg("dm",sn);dmAll=sn.docs.map(d=>({id:d.id,...d.data()}));renderChats()}));
- if(isAdm())unsubs.push(onSnapshot(query(collection(db,"dm"),where("grp","==",G())),sn=>{adm=sn.docs.map(d=>({id:d.id,...d.data()}));renderChats()}));
+ unsubs.push(subLim("dm",where("participants","array-contains",me.uid),300,sn=>{newMsg("dm",sn);dmAll=sn.docs.map(d=>({id:d.id,...d.data()}));renderChats()}));
+ if(isAdm())unsubs.push(subLim("dm",where("grp","==",G()),500,sn=>{adm=sn.docs.map(d=>({id:d.id,...d.data()}));renderChats()}));
  if(me.role==="admin")unsubs.push(onSnapshot(collection(db,"users"),sn=>{allUsers=sn.docs.map(d=>({uid:d.id,...d.data()}));renderUsers()}));
  nstat();enablePush();prayer();
 }
