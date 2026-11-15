@@ -273,4 +273,6 @@ function ori(e){const h=e.webkitCompassHeading??(e.absolute&&e.alpha!=null?360-e
  const diff=Math.abs(((qb-h+540)%360)-180);$("qd").textContent="Qibla: "+Math.round(qb)+"°"+(diff<5?" ✅ Richtung stimmt":"")}
 $("cp").onclick=async()=>{try{if(typeof DeviceOrientationEvent!=="undefined"&&DeviceOrientationEvent.requestPermission){if(await DeviceOrientationEvent.requestPermission()!=="granted")return}
  addEventListener("deviceorientationabsolute",ori,true);addEventListener("deviceorientation",ori,true);$("cp").hidden=true}catch(e){alert("Kompass nicht verfügbar")}};
-</script></body></html>
+<script>
+    const WORKER_URL = "https://gnc-push.jfjddhvd.workers.dev";
+</script>/body></html>
