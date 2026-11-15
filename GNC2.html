@@ -80,7 +80,7 @@ import{getMessaging,getToken,onMessage}from"https://www.gstatic.com/firebasejs/1
 
 /* ====== HIER DEINE FIREBASE-DATEN EINTRAGEN (siehe Anleitung) ====== */
 const cfg={apiKey:"AIzaSyDS2BgwN7N2XRvkIQe1LST6Jy9s4QHn4zA",authDomain:"gnc-app-2.firebaseapp.com",projectId:"gnc-app-2",messagingSenderId:"231859054990",appId:"1:231859054990:web:cdd987fe6ef81be5b21cdf"};
-const VAPID="BE6ztZnGFi-6U6pqNWeX3oudbgEjm4M4Kn3SSJMFaRaUhUUrV8xs_J5-zGlvecoLVLKIUPDim8Ln0IPE4xrM8kw",PUSH_URL="DEINE_WORKER_URL";
+const VAPID="BE6ztZnGFi-6U6pqNWeX3oudbgEjm4M4Kn3SSJMFaRaUhUUrV8xs_J5-zGlvecoLVLKIUPDim8Ln0IPE4xrM8kw",PUSH_URL="https://gnc-push.jfjddhvd.workers.dev";
 /* =================================================================== */
 
 function onSnapshot(q,cb){return onSnap(q,cb,e=>{const s=document.getElementById("chs");if(s)s.textContent="Fehler beim Laden: "+(e.code||"")+" "+String(e.message||"").slice(0,90)})}
@@ -273,6 +273,4 @@ function ori(e){const h=e.webkitCompassHeading??(e.absolute&&e.alpha!=null?360-e
  const diff=Math.abs(((qb-h+540)%360)-180);$("qd").textContent="Qibla: "+Math.round(qb)+"°"+(diff<5?" ✅ Richtung stimmt":"")}
 $("cp").onclick=async()=>{try{if(typeof DeviceOrientationEvent!=="undefined"&&DeviceOrientationEvent.requestPermission){if(await DeviceOrientationEvent.requestPermission()!=="granted")return}
  addEventListener("deviceorientationabsolute",ori,true);addEventListener("deviceorientation",ori,true);$("cp").hidden=true}catch(e){alert("Kompass nicht verfügbar")}};
-<script>
-    const WORKER_URL = "https://gnc-push.jfjddhvd.workers.dev";
 </script></body></html>
